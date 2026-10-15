@@ -11,6 +11,7 @@ is translated into C++ and compiled. There is no emulator.
 
 > This project is not affiliated with Activision, Eurocom or MGM. It contains
 > no game files: you need your own legally owned copy of the game.
+> This is fan research project.
 
 ## Status
 
@@ -86,13 +87,6 @@ CLI flags and `REX_*` environment variables override them.
 
 ## Development notes
 
-- The game's Lua 5.1 handles errors with `setjmp`/`longjmp`. Their addresses are
-  set in `default_functions.toml`; without them any Lua error ends in `exit(1)`
-  and a crash. `src/lua_error_hook.cpp` logs every Lua error.
-- `vrlb` isn't supported by the SDK codegen; it's replaced by `[[midasm_hook]]`s
-  in `src/vrlb_fixups.cpp`. The patches are `[[midasm_hook]]`s too
-  (`src/game_patches.cpp`): instruction bytes written to guest memory are never
-  executed in a recompiled game.
 - Set `dev_debug_runtime = true` to stub every unknown function and log
   missing ones to `logs/stub_sweep.txt` and `logs/missed_functions.txt`.
 
