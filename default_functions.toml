@@ -1,0 +1,68 @@
+# Manual function boundaries for addresses that the auto-analyzer didn't
+# discover as functions on its own (only reached via plain `b`, not `bl`,
+# so no call-graph edge pointed at them). Leaving the table empty lets
+# codegen find the natural boundaries itself (size=0 -> discover via region).
+#
+# Found via: rexglue codegen (UnresolvedCall errors during Validate phase).
+
+[functions]
+0x8232FBB8 = {}
+0x82323280 = {}
+0x821DD388 = {}
+0x82338918 = {}
+
+# stub sweep
+0x823927D8 = {}
+0x82369C00 = {}
+0x8235F950 = {}
+0x8275C778 = {}
+0x82757510 = {}
+
+0x825881D0 = {}
+
+# reach main menu
+0x823594B8 = {}
+0x8261B1A0 = {}
+0x8261ACD8 = {}
+0x826B62C0 = {}
+0x8255F9A8 = {}
+0x82763000 = {}
+0x827574F0 = {}
+
+# run single player
+0x8255F9B8 = {}
+0x822C4488 = {}
+0x822C44A0 = {}
+0x823594E8 = {}
+0x82359538 = {}
+0x823594F8 = {}
+
+# loading screen
+0x82359518 = {}
+0x82359528 = {}
+
+0x825424E8 = {}
+0x82542418 = {}
+0x82542438 = {}
+0x82584220 = {}
+0x824158C8 = {}
+0x82359498 = {}
+
+0x823594D8 = {}
+0x82359508 = {}
+
+# black screen after loading
+0x823594A8 = {}
+
+# reach gameplay (training)
+0x82584280 = {}
+0x82584E50 = {}
+
+# first mission
+0x82584210 = {}
+0x821DBDE0 = {}
+0x823594C8 = {}
+0x825842E0 = {}
+
+0x82542388 = {}
+0x822682F0 = {}

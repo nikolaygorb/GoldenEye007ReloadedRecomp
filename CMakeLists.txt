@@ -1,0 +1,63 @@
+# goldeneye007reloadedrecomp - ReXGlue Recompiled Project
+#
+# SDK boilerplate lives in generated/rexglue.cmake.
+
+cmake_minimum_required(VERSION 3.25)
+project(goldeneye007reloadedrecomp LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Fix git symlinks on Windows (libmspack in SDK uses symlinks)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/fix_symlinks.cmake)
+
+# Apply local patches (thirdparty/patches) to the SDK submodule
+#include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/apply_sdk_patches.cmake)
+
+# CPU optimization presets
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_optimizations.cmake)
+
+# Build ReXGlue SDK from source (git submodule)
+set(REXSDK_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rexglue-sdk" CACHE PATH "Path to rexglue-sdk source tree" FORCE)
+
+# Enable both graphics backends
+if(WIN32)
+    set(REXGLUE_USE_D3D12 ON CACHE BOOL "Enable D3D12 graphics backend")
+endif()
+set(REXGLUE_USE_VULKAN ON CACHE BOOL "Enable Vulkan graphics backend")
+
+include(generated/rexglue.cmake)
+
+set(GOLDENEYE007RELOADEDRECOMP_SOURCES
+    src/main.cpp
+    src/game_patches.cpp
+    src/game_cvars.cpp
+    src/render/gpu_wait_hook.cpp)
+
+if(WIN32)
+    list(APPEND GOLDENEYE007RELOADEDRECOMP_SOURCES
+        src/goldeneye007reloadedrecomp.rc
+    )
+endif()
+
+if(WIN32)
+    add_executable(goldeneye007reloadedrecomp WIN32 ${GOLDENEYE007RELOADEDRECOMP_SOURCES})
+else()
+    add_executable(goldeneye007reloadedrecomp ${GOLDENEYE007RELOADEDRECOMP_SOURCES})
+endif()
+
+rexglue_setup_target(goldeneye007reloadedrecomp GPU_PLUGINS xenos)
+
+
+# SDL looks for this file (name set by settings/mapping.toml's
+# hid_mappings_file) next to the exe at startup to fill in gamepads it
+# doesn't already recognize. Sourced from
+# https://github.com/mdqinc/SDL_GameControllerDB, see settings/README.md.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/settings/gamecontrollerdb.txt")
+    add_custom_command(TARGET goldeneye007reloadedrecomp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/settings/gamecontrollerdb.txt"
+                "$<TARGET_FILE_DIR:goldeneye007reloadedrecomp>/gamecontrollerdb.txt"
+        COMMENT "Copying gamecontrollerdb.txt next to goldeneye007reloadedrecomp.exe")
+endif()

@@ -1,0 +1,11 @@
+{
+    "version": 6,
+    "configurePresets": [
+        { "name": "local-win-debug", "inherits": ["win-amd64-debug"] },
+        { "name": "local-win-release", "inherits": ["win-amd64-release"] },
+        { "name": "local-win-relwithdebinfo", "inherits": ["win-amd64-relwithdebinfo"] },
+        { "name": "local-lin-debug", "inherits": ["linux-amd64-debug"] },
+        { "name": "local-lin-release", "inherits": ["linux-amd64-release"] },
+        { "name": "local-lin-relwithdebinfo", "inherits": ["linux-amd64-relwithdebinfo"] }
+    ]
+}
