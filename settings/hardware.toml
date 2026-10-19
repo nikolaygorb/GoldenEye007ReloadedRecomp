@@ -16,12 +16,12 @@ graphics_backend = "any"
 vsync = true
 resolution_scale = 2
 present_effect = "fsr"
-present_fsr_sharpness_reduction = 0.2
+present_fsr_sharpness_reduction = 0.3
 present_dither = false
 swap_post_effect = "smaa"
 async_shader_compilation = true
 native_2x_msaa = false
-anisotropic_override = 0
+anisotropic_override = 1
 
 texture_cache_memory_limit_soft = 1024
 texture_cache_memory_limit_hard = 4096
@@ -127,8 +127,8 @@ vulkan_async_skip_incomplete_frames = false
 
 headless = false
 
-# trace, debug, info, warn, error
-log_level = "warn"
+# trace, debug, info, warn, error, critical
+log_level = "error"
 
 use_dedicated_xma_thread = false
 xma_decoder = "new"

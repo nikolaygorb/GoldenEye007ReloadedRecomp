@@ -33,6 +33,8 @@ set(GOLDENEYE007RELOADEDRECOMP_SOURCES
     src/main.cpp
     src/game_patches.cpp
     src/game_cvars.cpp
+    src/mouse/mouse_look.cpp
+    src/mouse/mouse_look_hook.cpp
     src/render/gpu_wait_hook.cpp)
 
 if(WIN32)

@@ -15,6 +15,7 @@
 
 #include "debug_tools.h"
 #include "game_cvars.h"
+#include "mouse/mouse_look.h"
 #include "utils.h"
 
 #ifdef REXGLUE_ENABLE_PERF_COUNTERS
@@ -66,6 +67,14 @@ public:
       debug_tools::PerformMissingFunctionScan();
       debug_tools::PerformStubSweep();
     }
+  }
+
+  void OnCreateDialogs(rex::ui::ImGuiDrawer *drawer) override
+  {
+    // Window exists from this point on. Native mouse look (ge_mouse_look) only
+    // takes the mouse over while the look hooks in src/mouse/mouse_look_hook.cpp
+    // run; see src/mouse/mouse_look.h.
+    ge::mouse::MouseLook::Get().Attach(window(), drawer);
   }
 
   void OnShutdown() override

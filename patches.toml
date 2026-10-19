@@ -1,0 +1,43 @@
+# Code patches as [[midasm_hook]]s. The hooks run before the instruction at `address`
+# (after it with after_instruction = true).
+
+# ─────────────────────────────────────────────────────────────
+# xenia-canary game patches (src/game_patches.cpp)
+# ─────────────────────────────────────────────────────────────
+
+# Disable Lens Flares: 8248CB40 beq cr6,0x8248d8f8 -> b 0x8248d8f8 (skips the draw).
+[[midasm_hook]]
+address = 0x8248CB40
+name = "DisableLensFlaresHook"
+jump_address_on_true = 0x8248D8F8
+
+# 16x Anisotropic Filtering: 8240EF40 li r9,4 -> li r9,16.
+[[midasm_hook]]
+address = 0x8240EF40
+name = "AnisotropicFilteringR9Hook"
+registers = ["r9"]
+after_instruction = true
+
+# 16x Anisotropic Filtering: 826139F4 lbz r5,27(r28) -> li r5,16.
+[[midasm_hook]]
+address = 0x826139F4
+name = "AnisotropicFilteringR5Hook"
+registers = ["r5"]
+after_instruction = true
+
+# ─────────────────────────────────────────────────────────────
+# Native mouse look (src/mouse/mouse_look_hook.cpp). Both are in sub_821FDB18, the
+# player's look update (r31 = player).
+# ─────────────────────────────────────────────────────────────
+
+# Right after sub_82223208 (aim friction): r1+104/+108 = yaw/pitch rate (rad/s).
+[[midasm_hook]]
+address = 0x821FDD64
+name = "GeMouseLookYaw"
+registers = ["r31", "r1"]
+
+# The pitch clamp every path ends in: player+2140 is loaded and clamped right after.
+[[midasm_hook]]
+address = 0x821FDEE4
+name = "GeMouseLookPitch"
+registers = ["r31"]

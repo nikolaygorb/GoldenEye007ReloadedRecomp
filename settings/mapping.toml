@@ -33,6 +33,20 @@ mnk_mode = true
 mnk_mouse = true
 mnk_sensitivity = 1.0
 
+# Native mouse look (src/mouse/mouse_look_hook.cpp): on foot and on mounted guns
+# the mouse turns the camera directly - 1:1, without the game's stick dead zone,
+# response curve (acceleration) and aim friction. Elsewhere (menus, vehicles)
+# the mouse falls back to the emulated right stick above (mnk_sensitivity).
+ge_mouse_look = true
+# Camera turn per mouse count = 0.022 deg x this (same scale as Source games).
+ge_mouse_sensitivity = 1.8
+ge_mouse_invert_x = false
+ge_mouse_invert_y = false
+# Scale the turn with the zoom FOV; ge_mouse_zoom_sensitivity is an extra
+# factor on top while zoomed in.
+ge_mouse_zoom_scaling = true
+ge_mouse_zoom_sensitivity = 1.0
+
 # ─────────────────────────────────────────────────────────────
 # Keyboard bindings (default values)
 # ─────────────────────────────────────────────────────────────

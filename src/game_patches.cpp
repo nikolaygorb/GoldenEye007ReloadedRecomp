@@ -3,8 +3,8 @@
 //
 // The patches change instructions, which can't be written into guest memory: the code is
 // already recompiled, so changed bytes are never executed. Each one is a [[midasm_hook]]
-// in default_functions.toml instead: the hook runs before the original instruction and,
-// when its cvar is on, applies the patched instruction and jumps past the original.
+// in patches.toml instead: when its cvar is on, the hook either jumps where the patched
+// branch would go, or runs after the original instruction and overwrites its result.
 #include <cstdint>
 
 #include <rex/ppc/context.h>
@@ -21,4 +21,22 @@ namespace
 bool DisableLensFlaresHook()
 {
   return REXCVAR_GET(disable_lens_flares);
+}
+
+// 8240EF40: li r9,4 -> li r9,0x10
+void AnisotropicFilteringR9Hook(PPCRegister &r9)
+{
+  if (REXCVAR_GET(anisotropic_filtering_16x))
+  {
+    r9.s64 = kMaxAnisotropy;
+  }
+}
+
+// 826139F4: lbz r5,27(r28) -> li r5,0x10
+void AnisotropicFilteringR5Hook(PPCRegister &r5)
+{
+  if (REXCVAR_GET(anisotropic_filtering_16x))
+  {
+    r5.s64 = kMaxAnisotropy;
+  }
 }

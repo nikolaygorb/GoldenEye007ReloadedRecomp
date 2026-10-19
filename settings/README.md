@@ -137,7 +137,13 @@ build actually ships with), not the SDK's compiled-in default.
 | `guide_button` | bool | `true` | Whether the controller Guide/PS button is routed to the guest. |
 | `mnk_mode` | bool | `true` | Enables keyboard-as-controller input, merged in alongside any physical gamepad (see below). |
 | `mnk_mouse` | bool | `true` | Routes mouse movement to the right stick when `mnk_mode` is on. Off means the right stick only comes from the `keybind_rstick_*` keys. |
-| `mnk_sensitivity` | double | `1.0` | Mouse sensitivity for the right stick, range `0.01`-`10.0`. |
+| `mnk_sensitivity` | double | `1.0` | Mouse sensitivity for the right stick, range `0.01`-`10.0`. With `ge_mouse_look` on it only applies where native mouse look doesn't run (menus, vehicles). |
+| `ge_mouse_look` | bool | `true` | Native mouse look: on foot and on mounted guns the mouse turns the camera directly, skipping the game's stick dead zone, response curve and aim friction. Hooks in [`src/mouse/mouse_look_hook.cpp`](../src/mouse/mouse_look_hook.cpp). Needs `mnk_mode` and `mnk_mouse`. |
+| `ge_mouse_sensitivity` | double | `2.0` | Native mouse look: camera turn per mouse count = 0.022 deg x this. Range `0.01`-`100.0`. Independent of the in-game sensitivity option. |
+| `ge_mouse_invert_x` / `ge_mouse_invert_y` | bool | `false` | Invert native mouse look axes. The in-game Invert option doesn't apply to it. |
+| `ge_mouse_zoom_scaling` | bool | `true` | Scale native mouse look by `tan(fov/2) / tan(64deg/2)` while zoomed, so the picture moves under the mouse at the same rate. |
+| `ge_mouse_zoom_sensitivity` | double | `1.0` | Extra factor on native mouse look while zoomed in. |
+| `ge_mouse_look_log` | bool | `false` | Log the native mouse look hooks (dt, FOV, yaw rate before/after, pitch). |
 
 Gamepad button layout itself (DualShock 4, DualSense, Xbox, Switch Pro, ...)
 isn't a setting here - SDL auto-detects the controller and maps it to the
