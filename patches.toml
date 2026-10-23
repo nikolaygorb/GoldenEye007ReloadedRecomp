@@ -26,9 +26,15 @@ registers = ["r5"]
 after_instruction = true
 
 # ─────────────────────────────────────────────────────────────
-# Native mouse look (src/mouse/mouse_look_hook.cpp). Both are in sub_821FDB18, the
+# Native mouse look (src/mouse/mouse_look_hook.cpp). All are in sub_821FDB18, the
 # player's look update (r31 = player).
 # ─────────────────────────────────────────────────────────────
+
+# lbz r11,2618(r31): the aim lock / snap checks; mouse motion ends them (clears the bytes).
+[[midasm_hook]]
+address = 0x821FDD00
+name = "GeMouseLookAimAssist"
+registers = ["r31"]
 
 # Right after sub_82223208 (aim friction): r1+104/+108 = yaw/pitch rate (rad/s).
 [[midasm_hook]]

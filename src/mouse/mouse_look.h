@@ -55,6 +55,8 @@ namespace ge::mouse
     // turn (zoom).
     std::optional<Turn> Consume(double extra_scale);
 
+    bool HoldForSnap(double min_counts);
+
     // rex::ui::WindowInputListener
     void OnMouseMove(rex::ui::MouseEvent &e) override;
 

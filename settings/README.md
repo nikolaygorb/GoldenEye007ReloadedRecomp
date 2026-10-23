@@ -104,8 +104,8 @@ in-game Settings overlay's control rebinding screen.
 
 ## `hardware.toml` reference
 
-The "Default" column shows the value committed in `hardware.toml` (what the
-build actually ships with), not the SDK's compiled-in default.
+Main keys. "Value" is what the checked-in file sets; "Built-in default" is the compiled value used when the key is absent. Every ReXGlue (SDK) rendering option, with its values, is described in [`faq.md`](faq.md).
+
 
 | Key | Type | Default | Effect |
 |---|---|---|---|
@@ -115,16 +115,20 @@ build actually ships with), not the SDK's compiled-in default.
 | `resolution_scale` | int | `2` | Internal render-target supersampling, independent of window/guest resolution. |
 | `async_shader_compilation` | bool | `true` | Compile shaders on a background thread instead of blocking the render thread - reduces hitches when new shaders are first seen. |
 | `native_2x_msaa` | bool | `false` | Native 2x MSAA on the emulated render targets. |
-| `anisotropic_override` | int | `0` | Forces anisotropic texture filtering to this level (e.g. `16`); `0` leaves the game's own setting alone. |
-| `window_width` / `window_height` | int | `1920` / `1080` | Host window size. |
+| `anisotropic_override` | int | `1` | Forces anisotropic texture filtering, range `-1`-`5`: `-1` no override, `0` off, `1` 1x, `2` 2x, `3` 4x (SDK default), `4` 8x, `5` 16x. |
+| `window_width` / `window_height` | int | `1920` / `1080` | Host window size in logical pixels (`0`-`8192`); overrides the size from `resolution`. |
 | `fullscreen` | bool | `true` | Host window fullscreen. |
 | `monitor` | int | `0` | Host monitor index for fullscreen. |
-| `resolution` | string | `"1920x1080"` | Guest ("TV") video mode reported to the game - affects the game's own UI scale/aspect logic, separate from the host window size above. |
+| `resolution` | string | `"1920x1080"` | One setting for both the video mode reported to the game (affects the game's own UI scale/aspect logic) and the window size: `""` (the title's own), `720p`, `1080p`, `1440p`, `4k` or `WIDTHxHEIGHT`. `window_width` / `window_height` override the window size from it. What the game renders at is `resolution_scale`. |
 | `present_letterbox` | bool | `true` | Letterbox instead of stretch when window and guest aspect ratios differ. |
 | `d3d12_debug` | bool | `false` | D3D12 debug layer. Leave off - noticeably slower. |
 | `user_language` | int | `1` | Game language (Xbox locale ID, `1`-`12`, see the comment in [`hardware.toml`](hardware.toml)). SDK cvar, no hook needed: the game's own `XGetLanguage` (`sub_8265D7E8`) reads it through `ExGetXConfigSetting(XCONFIG_USER_LANGUAGE)`, and `sub_82392888` maps it to the game's language index. Values outside `1`-`12` fall back to English. Restart after changing it. |
 | `gpu_wait_mode` | int | `1` | Render thread wait for GPU command-buffer space: `0` busy spin (original), `1` yield, `2` sleep 200us. Hook in [`src/render/gpu_wait_hook.cpp`](../src/render/gpu_wait_hook.cpp). |
-| `dev_debug_runtime` | bool | `true` | Stub sweep and missing-function scan at startup (`logs/stub_sweep.txt`, `logs/missed_functions.txt`). Stubs silently swallow calls to unknown code, so turn it off when chasing crashes. |
+| `dev_debug_runtime` | bool | `false` | Stub sweep and missing-function scan at startup (`logs/stub_sweep.txt`, `logs/missed_functions.txt`). Stubs silently swallow calls to unknown code, so turn it off when chasing crashes. |
+| `max_local_users` | int | `2` | Local players that can be signed in, `1`-`4` (SDK default `1`). Players past the first sign in while a controller is assigned to them. See [`split-screen.md`](split-screen.md). |
+| `keyboard_own_player` | bool | `false` | Automatic device mode: `true` makes keyboard and mouse player 1 on their own, gamepads start at player 2; `false` (SDK default) keeps keyboard and mouse together with pad 1 as player 1, pad 2 is player 2. Ignored once `input_player1` or `input_player2` is set. |
+| `input_player1` / `input_player2` | string | `"auto"` (commented out) | Devices of players 1 and 2: `keyboard`, `pad1`-`pad4`, `pads`, `none`, `auto`, comma-separated. Setting either one switches to chosen devices (players 3-4 then get none). See [`split-screen.md`](split-screen.md). |
+| `user_gamertag_2` | string | `""` (commented out) | Name shown for player 2 (at most 15 bytes); empty = the first player's name with `(2)`. |
 | `disable_lens_flares` | bool | `false` | xenia-canary patch: skips the lens flare draw. |
 | `anisotropic_filtering_16x` | bool | `false` | xenia-canary patch: forces 16x anisotropy at both sampler setup sites. |
 

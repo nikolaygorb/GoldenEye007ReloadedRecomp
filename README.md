@@ -17,7 +17,9 @@ is translated into C++ and compiled. There is no emulator.
 
 - Boots to the main menu with video, audio and controller input.
 - Single player works: training and the first mission load and play.
-- A full playthrough hasn't been tested yet. Multiplayer is not implemented.
+- Online multiplayer is not implemented.
+- Local split-screen: the runtime can sign in a second player on a second
+  gamepad (enabled in `hardware.toml`, see [`settings/split-screen.md`](settings/split-screen.md)).
 - Optional patches from xenia-canary: no lens flares, 16x anisotropic
   filtering.
 
@@ -82,7 +84,7 @@ CLI flags and `REX_*` environment variables override them.
 
 | File | What it covers |
 |---|---|
-| `hardware.toml` | renderer, window, `gpu_wait_mode`, language (`user_language`), patches (`disable_lens_flares`, `anisotropic_filtering_16x`) |
+| `hardware.toml` | renderer, window, `gpu_wait_mode`, language (`user_language`), local players for split-screen (`max_local_users`, `keyboard_own_player`), patches (`disable_lens_flares`, `anisotropic_filtering_16x`) |
 | `mapping.toml` | input backend, keyboard and mouse |
 
 ## Development notes

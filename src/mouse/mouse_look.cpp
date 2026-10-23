@@ -333,6 +333,18 @@ namespace ge::mouse
     return result;
   }
 
+  bool MouseLook::HoldForSnap(double min_counts)
+  {
+    std::lock_guard lock(mu_);
+    if (phase_ != Phase::kEngaged || !REXCVAR_GET(ge_mouse_look) || !window_ || !has_focus_ ||
+        OverlayWantsMouse())
+    {
+      return false;
+    }
+    last_consume_ = Clock::now();
+    return std::abs(pending_dx_) + std::abs(pending_dy_) >= min_counts;
+  }
+
   Turn MouseLook::TakeTurnLocked(double extra_scale)
   {
     const double dx = pending_dx_;

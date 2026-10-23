@@ -17,112 +17,51 @@ vsync = true
 resolution_scale = 2
 present_effect = "fsr"
 present_fsr_sharpness_reduction = 0.3
-present_dither = false
+present_dither = true
 swap_post_effect = "smaa"
 async_shader_compilation = true
 native_2x_msaa = false
-anisotropic_override = 1
+anisotropic_override = 5
 
 texture_cache_memory_limit_soft = 1024
 texture_cache_memory_limit_hard = 4096
 clear_memory_page_state = true
 readback_memexport = true
 readback_memexport_fast = true
+readback_resolve = "none"
 host_present_from_non_ui_thread	= true
+d3d12_readback_resolve = false
+gpu_allow_invalid_fetch_constants = true
+depth_bias_shader_offset = true
 
 window_width = 1920
 window_height = 1080
 fullscreen = true
 monitor = 0
 resolution = "1920x1080"
-
-# "" (auto) / rtv / rov
-# D3D12 render targets: rtv fast, rov accurate
 render_target_path_d3d12 = "rtv"
-
-# true / false
-# Cache shaders on disk, fewer stutters
+render_target_path_vulkan = "fbo"
 store_shaders = true
-
-# true / false
-# Black bars for non-native aspect ratio
 present_letterbox = true
-  
-# -1 any physical GPU / -2 WARP / 0.. index
-# Which DXGI adapter to use
+
 d3d12_adapter = -1
-
-# true / false
-# Allow VRR and tearing on D3D12
 d3d12_allow_variable_refresh_rate_and_tearing = true
-
-# true / false
-# Bindless resources, faster on modern GPUs
 d3d12_bindless = true
-
-# true / false
-# Debug: break on D3D12 errors
 d3d12_break_on_error = false
-
-# true / false
-# Debug: break on D3D12 warnings
 d3d12_break_on_warning = false
-
-# true / false
-# Debug: D3D12 debug layer, slow
 d3d12_debug = false
-
-# true / false
-# Debug: dump DXBC shader disassembly
 d3d12_dxbc_disasm = false
-
-# true / false
-# Debug: dump DXIL conversion disassembly
 d3d12_dxbc_disasm_dxilconv = false
-
-# -1 auto / 0 synchronous / 1..32 threads
-# Background pipeline compilation thread count
 d3d12_pipeline_creation_threads = -1
-
-# 0 normal / 1 high / 2 realtime (admin)
-# GPU queue priority for the game
 d3d12_queue_priority = 2
-
-# true / false
-# Submit work at PM4 buffer end
 d3d12_submit_on_primary_buffer_end = true
-
-# true / false
-# Debug: draw tessellation as wireframe
 d3d12_tessellation_wireframe = false
 
-# -1 auto / 0 synchronous / 1..32 threads
-# Background pipeline compilation thread count
 vulkan_pipeline_creation_threads = -1
-
-# "" (auto) / fbo / fsi
-# Vulkan render targets: fbo fast, fsi accurate
-render_target_path_vulkan = "fbo"
-
-# true / false
-# Debug: log Vulkan validation messages
 vulkan_log_debug_messages = false
-
-# Present mode priority: immediate > mailbox > fifo_relaxed > fifo
-# true / false
-# No vsync, lowest latency, tearing
 vulkan_allow_present_mode_immediate = false
-
-# true / false
-# Vsync, tears only when late
 vulkan_allow_present_mode_fifo_relaxed = false
-
-# true / false
-# No tearing, newest frame wins
 vulkan_allow_present_mode_mailbox = true
-
-# true / false
-# Skip frames while pipelines compile
 vulkan_async_skip_incomplete_frames = false
 
 headless = false
@@ -130,20 +69,9 @@ headless = false
 # trace, debug, info, warn, error, critical
 log_level = "error"
 
-use_dedicated_xma_thread = false
-xma_decoder = "new"
-mount_cache = true
-framerate_limit = 0
-d3d12_readback_resolve = false
-readback_resolve = "none"
-
-gpu_allow_invalid_fetch_constants = true
-depth_bias_shader_offset = true
-
 # Perf CSV log path (per-frame metrics). Empty = disabled.
 # Only works when REXGLUE_ENABLE_PERF_COUNTERS is defined (non-Release).
 #perf_log_csv = "benchmark.csv"
-
 
 # Render thread wait for the GPU:
 # 0 = busy spin (original), 1 = yield the core, 2 = sleep 200us
@@ -162,6 +90,9 @@ dev_debug_runtime = false
 # Out-of-range values fall back to English.
 ##
 user_language = 1
+
+# Split-screen: local players and their controllers (see split-screen.md).
+max_local_users = 2
 
 # Ported xenia-canary game-patches for GE007R retail (415608AF).
 # https://github.com/xenia-canary/game-patches/blob/main/patches/415608AF%20-%20GoldenEye%20007%20Reloaded.patch.toml
