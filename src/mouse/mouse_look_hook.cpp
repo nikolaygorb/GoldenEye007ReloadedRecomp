@@ -4,13 +4,19 @@
 #include <rex/runtime.h>
 #include <rex/system/xmemory.h>
 
+#include <rex/ppc/func.h>
+
 #include <algorithm>
+#include <array>
 #include <bit>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <mutex>
 
 #include "mouse_look.h"
+
+extern "C" REX_FUNC(__imp__sub_82217070);
 
 REXCVAR_DEFINE_BOOL(ge_mouse_zoom_scaling, true, "Mouse",
                     "Scale mouse look with the camera's field of view, so zoomed aiming turns "
@@ -34,8 +40,15 @@ namespace
   constexpr uint32_t kPlayerAimLock = 2618;
   constexpr uint32_t kPlayerAimLockCached = 2661;
   constexpr uint32_t kPlayerAimSnap = 2662;
+  // Angular velocity (vec4, yaw = y), zeroed and set by the look update, integrated by
+  // sub_82217070.
+  constexpr uint32_t kPlayerYawRate = 1012;
   constexpr uint32_t kStackYawRate = 104;
   constexpr uint32_t kUnzoomedFov = 0x827F2854;
+
+  // Look updates a mouse yaw may wait for the integrator before it is dropped (it would land
+  // as one jump after a pause or a state without integration).
+  constexpr int kMaxPendingYawUpdates = 8;
 
   // Mouse motion that ends an aim snap or lock, in counts (|dx| + |dy|): a little over the
   // jitter of pressing the aim button.
@@ -45,6 +58,45 @@ namespace
   thread_local double g_pending_pitch = 0.0;
   thread_local bool g_pitch_pending = false;
   uint32_t g_log_counter = 0;
+
+  // The yaw goes through the angular velocity, which the integrator (sub_82217070) turns
+  // into rotation with its own dt - the one it then stores at player+428 for the next look
+  // update. The look update only has the previous frame's dt, so turn / dt there comes out
+  // scaled by the ratio of two frame times: jerks whenever the frame rate is uneven. The
+  // look update still puts turn / dt into the velocity (the turn animation reads it), and
+  // the integrator hook swaps that part for turn / its dt, so the rotation gets the turn
+  // exactly.
+  struct PendingYaw
+  {
+    uint32_t player = 0;
+    double yaw = 0.0;   // radians not integrated yet
+    float rate = 0.0f;  // what the look update put into the velocity for it
+    int updates = 0;    // look updates since it was last integrated
+  };
+  std::mutex g_yaw_mutex;
+  std::array<PendingYaw, 4> g_pending_yaw;
+
+  PendingYaw *FindPendingYawLocked(uint32_t player, bool create)
+  {
+    PendingYaw *oldest = &g_pending_yaw[0];
+    for (PendingYaw &p : g_pending_yaw)
+    {
+      if (p.player == player)
+      {
+        return &p;
+      }
+      if (!p.player || (oldest->player && p.updates > oldest->updates))
+      {
+        oldest = &p;
+      }
+    }
+    if (!create)
+    {
+      return nullptr;
+    }
+    *oldest = PendingYaw{player};
+    return oldest;
+  }
 
   uint8_t *Base()
   {
@@ -99,6 +151,14 @@ void GeMouseLookAimAssist(PPCRegister &r31)
   {
     return;
   }
+  {
+    // The look update has zeroed the velocity and may return before the yaw hook.
+    std::lock_guard lock(g_yaw_mutex);
+    if (PendingYaw *p = FindPendingYawLocked(r31.u32, false))
+    {
+      p->rate = 0.0f;
+    }
+  }
   uint8_t *player = Base() + r31.u32;
   const bool lock = player[kPlayerAimLock] != 0;
   const bool snap = player[kPlayerAimSnap] != 0;
@@ -130,10 +190,17 @@ void GeMouseLookYaw(PPCRegister &r31, PPCRegister &r1)
     return;
   }
   const uint32_t player = r31.u32;
-  const double dt = LoadFloat(player + kPlayerDeltaTime);
-  if (!(dt > 1e-4 && dt < 0.5))
   {
-    return; // the motion stays pending for the next update
+    // The look update has just zeroed the velocity: no rate of ours is in it any more.
+    std::lock_guard lock(g_yaw_mutex);
+    if (PendingYaw *p = FindPendingYawLocked(player, false))
+    {
+      p->rate = 0.0f;
+      if (p->yaw != 0.0 && ++p->updates > kMaxPendingYawUpdates)
+      {
+        p->yaw = 0.0;
+      }
+    }
   }
 
   double fov = 0.0;
@@ -144,10 +211,21 @@ void GeMouseLookYaw(PPCRegister &r31, PPCRegister &r1)
     return;
   }
 
+  // Only for the turn animation; the integrator hook makes the rotation exact.
+  const double dt = LoadFloat(player + kPlayerDeltaTime);
+  const float rate = dt > 1e-4 && dt < 0.5 ? static_cast<float>(turn->yaw / dt) : 0.0f;
   const uint32_t rate_address = r1.u32 + kStackYawRate;
   const float rate_in = LoadFloat(rate_address);
-  const float rate_out = rate_in + static_cast<float>(turn->yaw / dt);
+  const float rate_out = rate_in + rate;
   StoreFloat(rate_address, rate_out);
+  if (turn->yaw != 0.0)
+  {
+    std::lock_guard lock(g_yaw_mutex);
+    PendingYaw *p = FindPendingYawLocked(player, true);
+    p->yaw += turn->yaw;
+    p->rate = rate;
+    p->updates = 0;
+  }
   g_pending_pitch = turn->pitch;
   g_pitch_pending = true;
 
@@ -171,4 +249,31 @@ void GeMouseLookPitch(PPCRegister &r31)
   g_pitch_pending = false;
   const uint32_t address = r31.u32 + kPlayerPitch;
   StoreFloat(address, LoadFloat(address) + static_cast<float>(g_pending_pitch));
+}
+
+// sub_82217070 (r3 = player, f1 = dt): stores dt at player+428, then turns the player by the
+// angular velocity x dt (through its physics body, or GetRotation / SetRotation, vtable
+// +160 / +164). The mouse yaw's share of the velocity is swapped for yaw / this dt.
+extern "C" REX_FUNC(sub_82217070)
+{
+  const uint32_t player = ctx.r3.u32;
+  const double dt = ctx.f1.f64;
+  float correction = 0.0f;
+  if (dt > 1e-4 && dt < 0.5)
+  {
+    std::lock_guard lock(g_yaw_mutex);
+    if (PendingYaw *p = FindPendingYawLocked(player, false); p && (p->yaw != 0.0 || p->rate != 0.0f))
+    {
+      correction = static_cast<float>(p->yaw / dt) - p->rate;
+      p->yaw = 0.0;
+      p->rate = 0.0f;
+      p->updates = 0;
+    }
+  }
+  if (correction != 0.0f)
+  {
+    const uint32_t address = player + kPlayerYawRate;
+    StoreFloat(address, LoadFloat(address) + correction);
+  }
+  __imp__sub_82217070(ctx, base);
 }
