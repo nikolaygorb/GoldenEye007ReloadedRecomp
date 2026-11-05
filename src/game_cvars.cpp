@@ -1,8 +1,8 @@
 #include "game_cvars.h"
 
 REXCVAR_DEFINE_STRING(graphics_backend, "any", "GPU",
-                      "Graphics API backend: any, d3d12, vulkan")
-    .allowed({"any", "d3d12", "vulkan"});
+                      "Graphics API backend: any, d3d12, d3d11 (experimental), vulkan")
+    .allowed({"any", "d3d12", "d3d11", "vulkan"});
 
 REXCVAR_DEFINE_BOOL(disable_lens_flares, false, "Graphics",
                     "Disable lens flare effects");

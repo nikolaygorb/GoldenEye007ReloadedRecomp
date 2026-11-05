@@ -11,7 +11,7 @@
 gpu_plugin = "xenos"
 
 # "any" (d3d12 - win default, vulkan - lin default)
-# "d3d12" / "vulkan"
+# "d3d12" / "vulkan" / "d3d11"
 graphics_backend = "any"
 vsync = true
 resolution_scale = 2
@@ -63,6 +63,12 @@ vulkan_allow_present_mode_immediate = false
 vulkan_allow_present_mode_fifo_relaxed = false
 vulkan_allow_present_mode_mailbox = true
 vulkan_async_skip_incomplete_frames = false
+vulkan_hoist_shared_memory_uploads = true
+
+d3d11_adapter = -1
+d3d11_block_compressed_textures = true
+d3d11_resolve_into_textures = false
+d3d11_debug = false
 
 headless = false
 

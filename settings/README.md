@@ -9,6 +9,12 @@ database and this README.
 | [`hardware.toml`](hardware.toml) | Renderer/backend, window, vsync, resolution, debug output, experimental gameplay patches |
 | [`mapping.toml`](mapping.toml) | Input backend selection (gamepad/keyboard+mouse) |
 | [`gamecontrollerdb.txt`](gamecontrollerdb.txt) | SDL gamepad mappings for controllers it doesn't already recognize - not hand-authored, see below |
+| [`faq.md`](faq.md) | Every ReXGlue (SDK) rendering option. Copy of the SDK's `docs/graphics-options.md` |
+| [`texture-replacement.md`](texture-replacement.md), [`gpu-traces.md`](gpu-traces.md), [`split-screen.md`](split-screen.md) | HD texture packs, GPU frame traces, local split-screen. Copies of the SDK's `docs/` pages of the same name |
+
+The SDK pages are copied as they are (only links to `graphics-options.md`
+point to `faq.md`). After a submodule update, copy them again from
+`thirdparty/rexglue-sdk/docs/`.
 
 Split in two on purpose: rendering/perf tweaks and input tweaks are separate
 concerns you'll want to touch independently, and both stay tiny because
@@ -104,24 +110,26 @@ in-game Settings overlay's control rebinding screen.
 
 ## `hardware.toml` reference
 
-Main keys. "Value" is what the checked-in file sets; "Built-in default" is the compiled value used when the key is absent. Every ReXGlue (SDK) rendering option, with its values, is described in [`faq.md`](faq.md).
+Main keys. "Value" is what the checked-in file sets; where the compiled value used when the key is absent differs, "Effect" says so. Every ReXGlue (SDK) rendering option, with its values, is described in [`faq.md`](faq.md).
 
 
-| Key | Type | Default | Effect |
+| Key | Type | Value | Effect |
 |---|---|---|---|
 | `gpu_plugin` | string | `"xenos"` | GPU emulation plugin to load. Set here rather than on the command line now - see root [README](../README.md#run). A `--gpu_plugin` flag would still override this file if you ever needed a different plugin. |
-| `graphics_backend` | string | `"any"` | Graphics API backend: `"any"` (D3D12 first when both are compiled in), `"d3d12"`, or `"vulkan"`. Project-defined cvar (not from the SDK), wired up in `OnPreSetup()` in [`src/goldeneye007reloadedrecomp_app.h`](../src/goldeneye007reloadedrecomp_app.h) - it loads the plugin itself with the requested backend before the SDK's own auto-load (which only ever requests `"any"`) runs. Falls back to automatic selection with a warning if the requested backend isn't compiled into `rexgpu-xenos`. |
+| `graphics_backend` | string | `"any"` | Graphics API backend: `"any"` (D3D12 first when both are compiled in), `"d3d12"`, `"vulkan"`, or `"d3d11"` (experimental, Windows; only by name, never picked by `"any"`; compiled in because `CMakeLists.txt` sets `REXGLUE_USE_D3D11=ON`, see [`faq.md`](faq.md#direct3d-11-experimental)). Project-defined cvar (not from the SDK), wired up in `OnPreSetup()` in [`src/goldeneye007reloadedrecomp_app.h`](../src/goldeneye007reloadedrecomp_app.h) - it loads the plugin itself with the requested backend before the SDK's own auto-load (which only ever requests `"any"`) runs. Falls back to automatic selection with a warning if the requested backend isn't compiled into `rexgpu-xenos`. |
 | `vsync` | bool | `true` | Vertical sync. |
-| `resolution_scale` | int | `2` | Internal render-target supersampling, independent of window/guest resolution. |
+| `resolution_scale` | int | `2` | Internal render-target supersampling, independent of window/guest resolution. Built-in default `1`. |
 | `async_shader_compilation` | bool | `true` | Compile shaders on a background thread instead of blocking the render thread - reduces hitches when new shaders are first seen. |
 | `native_2x_msaa` | bool | `false` | Native 2x MSAA on the emulated render targets. |
-| `anisotropic_override` | int | `1` | Forces anisotropic texture filtering, range `-1`-`5`: `-1` no override, `0` off, `1` 1x, `2` 2x, `3` 4x (SDK default), `4` 8x, `5` 16x. |
+| `anisotropic_override` | int | `5` | Forces anisotropic texture filtering, range `-1`-`5`: `-1` no override, `0` off, `1` 1x, `2` 2x, `3` 4x (SDK default), `4` 8x, `5` 16x. |
 | `window_width` / `window_height` | int | `1920` / `1080` | Host window size in logical pixels (`0`-`8192`); overrides the size from `resolution`. |
 | `fullscreen` | bool | `true` | Host window fullscreen. |
 | `monitor` | int | `0` | Host monitor index for fullscreen. |
 | `resolution` | string | `"1920x1080"` | One setting for both the video mode reported to the game (affects the game's own UI scale/aspect logic) and the window size: `""` (the title's own), `720p`, `1080p`, `1440p`, `4k` or `WIDTHxHEIGHT`. `window_width` / `window_height` override the window size from it. What the game renders at is `resolution_scale`. |
 | `present_letterbox` | bool | `true` | Letterbox instead of stretch when window and guest aspect ratios differ. |
 | `d3d12_debug` | bool | `false` | D3D12 debug layer. Leave off - noticeably slower. |
+| `d3d11_*` | | | Direct3D 11 backend settings (`d3d11_adapter`, `d3d11_feature_level`, `d3d11_block_compressed_textures`, `d3d11_resolve_into_textures`, `d3d11_debug`); used only with `graphics_backend = "d3d11"`. The file sets `d3d11_feature_level = "11_0"`, which caps the backend at 11.0 even on 11.1 GPUs (memexport draws are then skipped); `""` uses the highest level. See [`faq.md`](faq.md#direct3d-11-experimental). |
+| `native_memory` | bool | `true` (not in the file) | Runs the game's own XDK `memcpy` / `memset` / `memmove` (`sub_82711B60`, `sub_827130B0`, `sub_82711A00`) as host code, falling back to the recompiled routine where the host version would differ. Defined by `REX_NATIVE_MEMORY_HOOKS` in [`src/render/native_memory_hook.cpp`](../src/render/native_memory_hook.cpp). `false` to rule it out when chasing a memory bug. |
 | `user_language` | int | `1` | Game language (Xbox locale ID, `1`-`12`, see the comment in [`hardware.toml`](hardware.toml)). SDK cvar, no hook needed: the game's own `XGetLanguage` (`sub_8265D7E8`) reads it through `ExGetXConfigSetting(XCONFIG_USER_LANGUAGE)`, and `sub_82392888` maps it to the game's language index. Values outside `1`-`12` fall back to English. Restart after changing it. |
 | `gpu_wait_mode` | int | `1` | Render thread wait for GPU command-buffer space: `0` busy spin (original), `1` yield, `2` sleep 200us. Hook in [`src/render/gpu_wait_hook.cpp`](../src/render/gpu_wait_hook.cpp). |
 | `dev_debug_runtime` | bool | `false` | Stub sweep and missing-function scan at startup (`logs/stub_sweep.txt`, `logs/missed_functions.txt`). Stubs silently swallow calls to unknown code, so turn it off when chasing crashes. |
@@ -143,7 +151,7 @@ Main keys. "Value" is what the checked-in file sets; "Built-in default" is the c
 | `mnk_mouse` | bool | `true` | Routes mouse movement to the right stick when `mnk_mode` is on. Off means the right stick only comes from the `keybind_rstick_*` keys. |
 | `mnk_sensitivity` | double | `1.0` | Mouse sensitivity for the right stick, range `0.01`-`10.0`. With `ge_mouse_look` on it only applies where native mouse look doesn't run (menus, vehicles). |
 | `ge_mouse_look` | bool | `true` | Native mouse look: on foot and on mounted guns the mouse turns the camera directly, skipping the game's stick dead zone, response curve and aim friction. Hooks in [`src/mouse/mouse_look_hook.cpp`](../src/mouse/mouse_look_hook.cpp). Needs `mnk_mode` and `mnk_mouse`. |
-| `ge_mouse_sensitivity` | double | `2.0` | Native mouse look: camera turn per mouse count = 0.022 deg x this. Range `0.01`-`100.0`. Independent of the in-game sensitivity option. |
+| `ge_mouse_sensitivity` | double | `1.8` | Native mouse look: camera turn per mouse count = 0.022 deg x this. Range `0.01`-`100.0`, built-in default `2.0`. Independent of the in-game sensitivity option. |
 | `ge_mouse_invert_x` / `ge_mouse_invert_y` | bool | `false` | Invert native mouse look axes. The in-game Invert option doesn't apply to it. |
 | `ge_mouse_zoom_scaling` | bool | `true` | Scale native mouse look by `tan(fov/2) / tan(64deg/2)` while zoomed, so the picture moves under the mouse at the same rate. |
 | `ge_mouse_zoom_sensitivity` | double | `1.0` | Extra factor on native mouse look while zoomed in. |

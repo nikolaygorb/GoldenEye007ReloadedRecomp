@@ -64,8 +64,10 @@ Check that your dump is the expected retail release:
    cmake --build --preset win-amd64-release
    ```
 
-   There are also Linux and macOS presets (`linux-amd64-*`, `mac-*`), but only
-   Windows is tested. Codegen (`Default.xex` → `generated/`) runs automatically
+   There are also Linux and macOS presets and ARM64 ones (`linux-amd64-*`,
+   `win-arm64-*`, `linux-arm64-*`, `mac-amd64-*`, `mac-arm64-*`), but only
+   Windows x64 is tested. Windows builds include Direct3D 12, Vulkan and the
+   experimental Direct3D 11 backend (`graphics_backend` in `hardware.toml`). Codegen (`Default.xex` → `generated/`) runs automatically
    as part of the build.
 
 ## Run
@@ -84,13 +86,21 @@ CLI flags and `REX_*` environment variables override them.
 
 | File | What it covers |
 |---|---|
-| `hardware.toml` | renderer, window, `gpu_wait_mode`, language (`user_language`), local players for split-screen (`max_local_users`, `keyboard_own_player`), patches (`disable_lens_flares`, `anisotropic_filtering_16x`) |
+| `hardware.toml` | renderer (`graphics_backend`: `any`, `d3d12`, `vulkan`, `d3d11`), window, `gpu_wait_mode`, language (`user_language`), local players for split-screen (`max_local_users`, `keyboard_own_player`), patches (`disable_lens_flares`, `anisotropic_filtering_16x`) |
 | `mapping.toml` | input backend, keyboard and mouse |
+
+All SDK rendering options are described in [`settings/faq.md`](settings/faq.md).
 
 ## Development notes
 
 - Set `dev_debug_runtime = true` to stub every unknown function and log
   missing ones to `logs/stub_sweep.txt` and `logs/missed_functions.txt`.
+- Codegen keeps CR, CTR, XER and the reserved register in C++ locals
+  (`*_as_local` in `goldeneye007reloadedrecomp_manifest.toml`). Changing them
+  regenerates all of `generated/`.
+- The game's XDK `memcpy` / `memset` / `memmove` run as host code
+  ([`src/render/native_memory_hook.cpp`](src/render/native_memory_hook.cpp),
+  cvar `native_memory`).
 
 ## Credits
 
