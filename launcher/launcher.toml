@@ -1,0 +1,128 @@
+# GoldenEye 007: Reloaded: the launcher's page for this title (format: thirdparty/rexglue-sdk/docs/launcher.md).
+# The common rows (display, renderer, upscaling, controls, language, log) come from the SDK's
+# launcher/common.toml; rows here with the same key replace them.
+
+[game]
+name = "GoldenEye 007: Reloaded"
+required_files = ["assets/Default.xex"]
+
+[theme]
+bg = "#0E0E10"
+bg2 = "#060607"
+side = "#0A0A0C"
+panel = "#1B1A1E"
+panel_hot = "#25242A"
+border = "#34322F"
+text = "#EEEBE4"
+dim = "#A7A39A"
+accent = "#C9A24A"
+accent_hi = "#DBB866"
+accent_text = "#14100A"
+accent2 = "#D8D8DC"
+warn = "#DBB866"
+ok = "#7FC38E"
+display_font = "fonts/Cinzel-Bold.ttf"
+tagline = "Recompiled"
+
+# Cinzel's lower case are small capitals: "GoldenEye" gives the big G and E of the logo.
+[[theme.wordmark]]
+text = "GoldenEye"
+size = 27
+tracking = 0.02
+gradient = ["#FBEAA6", "#E9C766", "#C99A35", "#E2BC5C"]
+shadow = { color = "#4A3008", x = 0, y = 1 }
+
+[[theme.wordmark]]
+text = "RELOADED"
+font = "fonts/Exo2-ExtraBoldItalic.ttf"
+size = 13
+tracking = 0.06
+indent = 14
+gradient = ["#FFFFFF", "#E6E8EC", "#9DA3AC", "#D5D9DF"]
+shadow = { color = "#000000", x = 0, y = 1 }
+
+[[theme.wordmark]]
+text = "007"
+font = "fonts/Exo2-ExtraBoldItalic.ttf"
+same_line = true
+size = 30
+gradient = ["#FBEAA6", "#E9C766", "#C99A35", "#E2BC5C"]
+shadow = { color = "#4A3008", x = 0, y = 1 }
+
+#------------------------------------------------------------------------------
+# Game
+#------------------------------------------------------------------------------
+
+[[row]]
+page = "Game"
+key = "disable_lens_flares"
+kind = "toggle"
+invert = true
+label = "Lens flares"
+default = false
+help = "Off removes the sun and light flares."
+
+[[row]]
+page = "Game"
+key = "anisotropic_filtering_16x"
+kind = "toggle"
+label = "Game's 16× filtering"
+default = false
+help = "Sets 16× anisotropic filtering in the game's own samplers (on top of Graphics > Texture filtering)."
+
+#------------------------------------------------------------------------------
+# Controls
+#------------------------------------------------------------------------------
+
+[[row]]
+page = "Controls"
+key = "ge_mouse_look"
+file = "mapping"
+kind = "toggle"
+label = "Mouse look"
+default = true
+help = "Raw mouse movement turns the camera, 1:1, without stick dead zones or acceleration."
+
+[[row]]
+page = "Controls"
+key = "ge_mouse_sensitivity"
+file = "mapping"
+kind = "slider"
+label = "Mouse sensitivity"
+min = 0.2
+max = 6.0
+step = 0.1
+decimals = 1
+default = 1.8
+enable_if = { key = "ge_mouse_look", value = true }
+help = "Camera turn per mouse count: 0.022° × this value, as in Source games."
+
+[[row]]
+page = "Controls"
+key = "ge_mouse_zoom_scaling"
+file = "mapping"
+kind = "toggle"
+label = "Slower when aiming"
+default = true
+enable_if = { key = "ge_mouse_look", value = true }
+help = "Scales the mouse down with the zoom while aiming."
+
+[[row]]
+page = "Controls"
+key = "ge_mouse_invert_y"
+file = "mapping"
+kind = "toggle"
+label = "Invert mouse Y"
+default = false
+enable_if = { key = "ge_mouse_look", value = true }
+help = "Moving the mouse up looks down."
+
+[[row]]
+page = "Controls"
+key = "ge_mouse_invert_x"
+file = "mapping"
+kind = "toggle"
+label = "Invert mouse X"
+default = false
+enable_if = { key = "ge_mouse_look", value = true }
+help = "Moving the mouse right looks left."

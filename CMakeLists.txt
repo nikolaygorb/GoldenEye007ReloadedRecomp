@@ -51,7 +51,9 @@ else()
     add_executable(goldeneye007reloadedrecomp ${GOLDENEYE007RELOADEDRECOMP_SOURCES})
 endif()
 
-rexglue_setup_target(goldeneye007reloadedrecomp GPU_PLUGINS xenos)
+rexglue_setup_target(goldeneye007reloadedrecomp GPU_PLUGINS xenos native)
+
+rexglue_add_launcher(goldeneye007reloadedrecomp ICON_RC src/goldeneye007reloadedrecomp.rc)
 
 
 # SDL looks for this file (name set by settings/mapping.toml's

@@ -8,11 +8,12 @@
 #
 # Flat key = value only
 
-gpu_plugin = "xenos"
+# native / xenos
+gpu_plugin = "native"
 
 # "any" (d3d12 - win default, vulkan - lin default)
-# "d3d12" / "vulkan" / "d3d11"
-graphics_backend = "any"
+# "d3d11" (experimental) / "d3d12" / "vulkan"
+graphics_backend = "vulkan"
 vsync = true
 resolution_scale = 2
 present_effect = "fsr"
@@ -22,9 +23,13 @@ swap_post_effect = "smaa"
 async_shader_compilation = true
 native_2x_msaa = false
 anisotropic_override = 5
+present_fsr_quality_mode = "auto"
+present_fsr_max_upsampling_passes = 1
+present_cas_additional_sharpness = 0.2
 
-texture_cache_memory_limit_soft = 1024
-texture_cache_memory_limit_hard = 4096
+# native render option
+#native_resolution_scale = 2.25
+
 clear_memory_page_state = true
 readback_memexport = true
 readback_memexport_fast = true
@@ -57,6 +62,7 @@ d3d12_queue_priority = 2
 d3d12_submit_on_primary_buffer_end = true
 d3d12_tessellation_wireframe = false
 
+vulkan_device = -1
 vulkan_pipeline_creation_threads = -1
 vulkan_log_debug_messages = false
 vulkan_allow_present_mode_immediate = false
@@ -78,6 +84,7 @@ log_level = "error"
 # Perf CSV log path (per-frame metrics). Empty = disabled.
 # Only works when REXGLUE_ENABLE_PERF_COUNTERS is defined (non-Release).
 #perf_log_csv = "benchmark.csv"
+#frame_stats_interval = 5
 
 # Render thread wait for the GPU:
 # 0 = busy spin (original), 1 = yield the core, 2 = sleep 200us
@@ -86,6 +93,8 @@ gpu_wait_mode = 1
 # Enable runtime debug tools (stub sweep, missing function scan).
 # Produces logs/missed_functions.txt and logs/stub_sweep.txt.
 dev_debug_runtime = false
+unregistered_function_log = "unregistered_functions.txt"
+trace_gpu_prefix = "traces"
 
 # Xbox locale language:
 #  1 = English      2 = Japanese     3 = German      4 = French
